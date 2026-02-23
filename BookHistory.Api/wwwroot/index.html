@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book History</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+    }
+
+    header {
+      background: #2b6cb0;
+      color: white;
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 { font-size: 1.5rem; }
+
+    header a {
+      color: white;
+      text-decoration: none;
+      background: rgba(255,255,255,0.2);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+    .filters {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .filters input, .filters select {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .filters button {
+      padding: 8px 20px;
+      background: #2b6cb0;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .filters button:hover { background: #2c5282; }
+
+    .stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 10px;
+      padding: 16px 24px;
+      flex: 1;
+      min-width: 150px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    .stat-card .number { font-size: 2rem; font-weight: bold; color: #2b6cb0; }
+    .stat-card .label { font-size: 0.85rem; color: #718096; margin-top: 4px; }
+
+    .changelog { display: flex; flex-direction: column; gap: 12px; }
+
+    .entry {
+      background: white;
+      border-radius: 10px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-left: 4px solid #2b6cb0;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .entry.BookCreated { border-left-color: #38a169; }
+    .entry.BookDeleted { border-left-color: #e53e3e; }
+    .entry.TitleChanged { border-left-color: #d69e2e; }
+    .entry.AuthorAdded { border-left-color: #805ad5; }
+    .entry.AuthorRemoved { border-left-color: #dd6b20; }
+    .entry.DescriptionChanged { border-left-color: #3182ce; }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      white-space: nowrap;
+      background: #ebf8ff;
+      color: #2b6cb0;
+    }
+
+    .entry.BookCreated .badge { background: #f0fff4; color: #38a169; }
+    .entry.BookDeleted .badge { background: #fff5f5; color: #e53e3e; }
+    .entry.TitleChanged .badge { background: #fffff0; color: #d69e2e; }
+    .entry.AuthorAdded .badge { background: #faf5ff; color: #805ad5; }
+    .entry.AuthorRemoved .badge { background: #fffaf0; color: #dd6b20; }
+
+    .entry-content { flex: 1; }
+    .entry-title { font-weight: 600; margin-bottom: 4px; }
+    .entry-meta { font-size: 0.82rem; color: #718096; }
+    .entry-values { margin-top: 8px; font-size: 0.85rem; }
+    .old-value { color: #e53e3e; text-decoration: line-through; }
+    .new-value { color: #38a169; }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .pagination button {
+      padding: 8px 16px;
+      border: 1px solid #cbd5e0;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .pagination span { font-size: 0.9rem; color: #718096; }
+
+    .empty { text-align: center; padding: 60px; color: #718096; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📚 Book History</h1>
+  <a href="/swagger" target="_blank">Swagger API →</a>
+</header>
+
+<div class="container">
+
+  <div class="filters">
+    <input type="text" id="filterType" placeholder="Filter by type (e.g. TitleChanged)" />
+    <input type="date" id="filterFrom" placeholder="From date" />
+    <input type="date" id="filterTo" placeholder="To date" />
+    <select id="filterOrder">
+      <option value="ChangedAt">Order by Date</option>
+      <option value="ChangeType">Order by Type</option>
+      <option value="BookTitle">Order by Book</option>
+    </select>
+    <select id="filterDesc">
+      <option value="true">Descending</option>
+      <option value="false">Ascending</option>
+    </select>
+    <button onclick="load(1)">🔍 Filter</button>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  <div class="changelog" id="changelog"></div>
+
+  <div class="pagination">
+    <button id="prevBtn" onclick="changePage(-1)" disabled>← Prev</button>
+    <span id="pageInfo"></span>
+    <button id="nextBtn" onclick="changePage(1)">Next →</button>
+  </div>
+
+</div>
+
+<script>
+  let currentPage = 1;
+  const pageSize = 10;
+
+  async function load(page) {
+    currentPage = page;
+
+    const type = document.getElementById('filterType').value;
+    const from = document.getElementById('filterFrom').value;
+    const to = document.getElementById('filterTo').value;
+    const orderBy = document.getElementById('filterOrder').value;
+    const desc = document.getElementById('filterDesc').value;
+
+    let url = `/api/changelogs?page=${page}&pageSize=${pageSize}&orderBy=${orderBy}&descending=${desc}`;
+    if (type) url += `&changeType=${type}`;
+    if (from) url += `&from=${from}`;
+    if (to) url += `&to=${to}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    renderStats(data);
+    renderChangelog(data.items);
+    renderPagination(data);
+  }
+
+  function renderStats(data) {
+    document.getElementById('stats').innerHTML = `
+      <div class="stat-card">
+        <div class="number">${data.totalCount}</div>
+        <div class="label">Total Changes</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">${data.totalPages}</div>
+        <div class="label">Total Pages</div>
+      </div>
+      <div class="stat-card">
+        <div class="number">${data.page}</div>
+        <div class="label">Current Page</div>
+      </div>
+    `;
+  }
+
+  function renderChangelog(items) {
+    const el = document.getElementById('changelog');
+    if (!items || items.length === 0) {
+      el.innerHTML = '<div class="empty">No changes found.</div>';
+      return;
+    }
+
+    el.innerHTML = items.map(item => `
+      <div class="entry ${item.changeType}">
+        <span class="badge">${item.changeType}</span>
+        <div class="entry-content">
+          <div class="entry-title">${item.description}</div>
+          <div class="entry-meta">
+            ${item.bookTitle ? `📖 ${item.bookTitle} &nbsp;·&nbsp;` : ''}
+            🕐 ${new Date(item.changedAt).toLocaleString()}
+          </div>
+          ${item.oldValue || item.newValue ? `
+          <div class="entry-values">
+            ${item.oldValue ? `<span class="old-value">${item.oldValue}</span> → ` : ''}
+            ${item.newValue ? `<span class="new-value">${item.newValue}</span>` : ''}
+          </div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderPagination(data) {
+    document.getElementById('pageInfo').textContent = `Page ${data.page} of ${data.totalPages}`;
+    document.getElementById('prevBtn').disabled = data.page <= 1;
+    document.getElementById('nextBtn').disabled = data.page >= data.totalPages;
+  }
+
+  function changePage(dir) {
+    load(currentPage + dir);
+  }
+
+  load(1);
+</script>
+
+</body>
+</html>
