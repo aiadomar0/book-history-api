@@ -8,6 +8,7 @@ public interface IBookService
     Task<BookDto?> GetBookByIdAsync(Guid id);
     Task<BookDto> CreateBookAsync(CreateBookDto dto);
     Task<BookDto?> UpdateBookAsync(Guid id, UpdateBookDto dto);
+    Task<bool> DeleteBookAsync(Guid id);
     Task<PagedResult<ChangeLogDto>> GetChangeLogsAsync(ChangeLogQuery query);
     Task<IEnumerable<GroupedChangeLogResult>> GetGroupedChangeLogsAsync(ChangeLogQuery query);
 }

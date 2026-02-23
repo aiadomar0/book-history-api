@@ -28,4 +28,10 @@ public class BookRepository : IBookRepository
         _ctx.Books.Update(book);
         await _ctx.SaveChangesAsync();
     }
+    
+    public async Task DeleteAsync(Book book)
+    {
+        _ctx.Books.Remove(book);
+        await _ctx.SaveChangesAsync();
+    }
 }

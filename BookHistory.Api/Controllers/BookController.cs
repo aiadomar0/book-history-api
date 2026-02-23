@@ -43,4 +43,12 @@ public class BooksController : ControllerBase
         var updated = await _service.UpdateBookAsync(id, dto);
         return updated is null ? NotFound() : Ok(updated);
     }
+
+    /// <summary>Deletes a book and records a BookDeleted changelog entry</summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var deleted = await _service.DeleteBookAsync(id);
+        return deleted ? NoContent() : NotFound();
+    }
 }

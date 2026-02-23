@@ -22,6 +22,11 @@ public class BookDbContext : DbContext
         modelBuilder.Entity<BookChangeLog>()
             .HasOne(cl => cl.Book)
             .WithMany(b => b.ChangeLogs)
-            .HasForeignKey(cl => cl.BookId);
+            .HasForeignKey(cl => cl.BookId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<BookChangeLog>()
+            .Property(cl => cl.BookId)
+            .IsRequired(false);
     }
 }

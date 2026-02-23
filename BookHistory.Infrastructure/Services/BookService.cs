@@ -75,6 +75,27 @@ public class BookService : IBookService
         return ToDto(book);
     }
 
+    public async Task<bool> DeleteBookAsync(Guid id)
+    {
+        var book = await _bookRepo.GetByIdAsync(id);
+        if (book is null) return false;
+
+        await _logRepo.AddRangeAsync(new[]
+        {
+            new BookChangeLog
+            {
+                Id = Guid.NewGuid(), BookId = book.Id,
+                ChangedAt = DateTime.UtcNow,
+                ChangeType = "BookDeleted",
+                Description = $"Book \"{book.Title}\" was deleted",
+                OldValue = book.Title
+            }
+        });
+
+        await _bookRepo.DeleteAsync(book);
+        return true;
+    }
+
     public async Task<PagedResult<ChangeLogDto>> GetChangeLogsAsync(ChangeLogQuery query)
     {
         var paged = await _logRepo.GetPagedAsync(query);
