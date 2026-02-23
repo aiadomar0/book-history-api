@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="BookHistory.Api/BookHistory.Api.csproj" />
+  <Project Path="BookHistory.Domain/BookHistory.Domain.csproj" />
+  <Project Path="BookHistory.Infrastructure/BookHistory.Infrastructure.csproj" />
+</Solution>
